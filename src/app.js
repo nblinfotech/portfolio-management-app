@@ -2,14 +2,9 @@ const express = require('express');
 
 const helmet = require('helmet');
 const xss = require('xss-clean');
-const mongoSanitize = require('express-mongo-sanitize');
-const compression = require('compression');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const httpStatus = require('http-status');
-// const session = require('express-session');
-const swaggerDef = require('./docs/swaggerDef')
 const config = require('./config/core/config');
 const morgan = require('./config/core/morgan');
 const { jwtStrategy } = require('./config/core/passport');
@@ -34,7 +29,7 @@ if (config.env !== 'test') {
 app.use(helmet());
 
 // change limit according to file upload limit as per required.
-app.use(express.json({ limit: '150mb' })); 
+app.use(express.json({ limit: '150mb' }));
 app.use(express.urlencoded({ limit: '150mb', extended: true }));
 
 // sanitize request data
