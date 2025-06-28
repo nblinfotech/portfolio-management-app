@@ -1,17 +1,17 @@
 const httpStatus = require('http-status');
-const catchAsync = require('../../utils/catchAsync');
-const { authService, userService, userTokenService} = require('../../services/core/index');
+const catchAsync = require('../utils/catchAsync');
+const { authService, userService, userTokenService } = require('../services/core/index');
 const { HttpStatusCode } = require('axios');
 const crypto = require('crypto');
 const { Infobip, AuthType } = require("@infobip-api/sdk");
-const models = require('../../models/core');
+const models = require('../models/core');
 const OrganizationApps = models.organizationApps;
 const Apps = models.apps;
 const Modules = models.modules;
 // const SmsService = require('../../services/core/smsService');
 
-const SmsService = require('../../services/core/smsService');
-const { emailService } = require('../../services/core');
+const SmsService = require('../services/core/smsService');
+const { emailService } = require('../services/core');
 const smsService = new SmsService();
 
 let infobip = new Infobip({
@@ -67,7 +67,7 @@ const loginWithPassword = catchAsync(async (req, res) => {
   const user = await authService.loginWithPassword(email, password, req);
   const tokens = await userTokenService.generateAuthTokens(user);
 
-      // TODO: Set to true in production
+  // TODO: Set to true in production
   res.cookie('jwt', tokens?.refresh.token, {
     httpOnly: false,
     sameSite: false,
@@ -88,12 +88,12 @@ const login = catchAsync(async (req, res) => {
   // res.status(200).send({ status: 200, message: 'Login successful! Redirecting to Otp validation.', result });
 
   // return result;
-  if(!result.is2FA) {
+  if (!result.is2FA) {
 
     const tokens = await userTokenService.generateAuthTokens(result.user);
     const encryptedPermissions = encryptPermissions(result.permissions);
 
- // check for subscribed apps
+    // check for subscribed apps
     const apps = await Apps.findAll({
       include: {
         model: OrganizationApps,
@@ -103,7 +103,7 @@ const login = catchAsync(async (req, res) => {
       }
     });
 
-    const modules = await Modules.findAll({  });
+    const modules = await Modules.findAll({});
 
 
     // TODO: Set to true in production
@@ -114,21 +114,22 @@ const login = catchAsync(async (req, res) => {
       maxAge: Number(process.env.JWT_REFRESH_EXPIRATION_DAYS) * 24 * 60 * 60 * 1000,
     });
 
-    res.status(httpStatus.OK).send({ status: httpStatus.OK,
-       message: 'Logged in successfully!',
-       user:result.user,
-       tokens,
-       is2FA: result.is2FA,
-       timeZone: result.timeZone,
-       profilePic:result.profilePic,
-       permissions: encryptedPermissions,
-       apps:apps,
-       modules,
+    res.status(httpStatus.OK).send({
+      status: httpStatus.OK,
+      message: 'Logged in successfully!',
+      user: result.user,
+      tokens,
+      is2FA: result.is2FA,
+      timeZone: result.timeZone,
+      profilePic: result.profilePic,
+      permissions: encryptedPermissions,
+      apps: apps,
+      modules,
       dateTimeFormat: result.dateTimeFormat || 'hh:mm A Do MMM YYYY',
       businessUnitList: result.businessUnitList,
-       });
+    });
   } else {
-        res.status(200).send({ status: 200, message: 'Login successful! Redirecting to Otp validation.', is2FA:result.is2FA,user:result.user });
+    res.status(200).send({ status: 200, message: 'Login successful! Redirecting to Otp validation.', is2FA: result.is2FA, user: result.user });
   }
 
 
@@ -173,7 +174,7 @@ const logout = catchAsync(async (req, res) => {
 const refreshTokens = catchAsync(async (req, res) => {
   const tokens = await authService.refreshToken(req.cookies.jwt, req, res);
 
-      // TODO: Set to true in production
+  // TODO: Set to true in production
   res.cookie('jwt', tokens.refresh.token, {
     httpOnly: false,
     sameSite: false,
@@ -218,7 +219,7 @@ const resetPassword = catchAsync(async (req, res) => {
 const forgotPassword = catchAsync(async (req, res) => {
   const resetPasswordToken = await userTokenService.generateResetPasswordToken(req.body.email, req);
   const user = await userService.getUserByEmail(req.body.email);
-  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken, user.first_name,user.organization_id);
+  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken, user.first_name, user.organization_id);
   res.status(httpStatus.OK).json({ status: httpStatus.OK, message: `Please check your inbox and follow the instructions to reset your password. If you don't see the email within a few minutes, please check your spam or junk folder` });
 });
 
@@ -274,30 +275,31 @@ const loginWithOtp = catchAsync(async (req, res) => {
     }
   });
 
-   const modules = await Modules.findAll({  });
+  const modules = await Modules.findAll({});
 
 
 
-      // TODO: Set to true in production
+  // TODO: Set to true in production
   res.cookie('jwt', tokens?.refresh.token, {
     httpOnly: false,
     sameSite: false,
     secure: false,
     maxAge: Number(process.env.JWT_REFRESH_EXPIRATION_DAYS) * 24 * 60 * 60 * 1000,
   });
-  res.status(httpStatus.OK).send({ status: httpStatus.OK,
-     message: 'Authentication successful! Redirecting......',
-      user:result.user,
-       is2FA: result.is2FA ,
-       tokens,
-        timeZone: result.timeZone,
-        profilePic:result.profilePic,
-        permissions: encryptedPermissions,
-        apps:apps,
-        modules,
+  res.status(httpStatus.OK).send({
+    status: httpStatus.OK,
+    message: 'Authentication successful! Redirecting......',
+    user: result.user,
+    is2FA: result.is2FA,
+    tokens,
+    timeZone: result.timeZone,
+    profilePic: result.profilePic,
+    permissions: encryptedPermissions,
+    apps: apps,
+    modules,
     dateTimeFormat: result.dateTimeFormat || 'hh:mm A Do MMM YYYY',
     businessUnitList: result.businessUnitList,
-      });
+  });
 });
 
 
@@ -353,7 +355,7 @@ const sendOtp = catchAsync(async (req, res) => {
   // console.log(otp);
   if (email) {
 
-    await emailService.sendOtp(email, otp, name,organization_id);
+    await emailService.sendOtp(email, otp, name, organization_id);
     return res.status(httpStatus.OK).json({ status: httpStatus.OK, message: 'OTP sent successfully via email' });
   } else if (phone) {
 
